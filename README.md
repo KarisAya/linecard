@@ -21,4 +21,4 @@
 
 效果：
 
-[效果](/example/example.png)
+![效果](/example/example.png)
