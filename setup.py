@@ -8,7 +8,7 @@ else:
 
 ext_modules = [
     Extension(
-        "clovers_utils.linecard.linecard_parsing",
+        "linecard.linecard_parsing",
         sources=["src/linecard_parsing.cpp"],
         extra_compile_args=extra_compile_args,
     ),
