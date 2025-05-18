@@ -1,0 +1,27 @@
+[project]
+name = "linecard"
+version = "0.1.0"
+description = ""
+authors = [{ name = "KarisAya", email = "1048827424@qq.com" }]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["pillow (>=11.1.0,<12.0.0)", "fonttools (>=4.58.0,<5.0.0)"]
+# [build-system]
+# requires = ["poetry-core>=2.0.0,<3.0.0"]
+# build-backend = "poetry.core.masonry.api"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry.group.build.dependencies]
+setuptools = "^75.8.0"
+cibuildwheel = "^2.22.0"
+
+
+[tool.setuptools]
+packages = ["clovers_utils", "clovers_utils.linecard"]
+
+# python setup.py build_ext --inplace
+# cibuildwheel --platform linux --output-dir ./dist
+# cibuildwheel --platform windows --output-dir ./dist
