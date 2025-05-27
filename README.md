@@ -12,4 +12,6 @@ _✨ linecard 是一个基于 pillow 的一个方便文字转图片的函数。 
 
 </div>
 
+[使用方法见示例文件](/example/main.py)
+
 ![效果](/example/example.png)

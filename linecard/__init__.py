@@ -136,7 +136,7 @@ class CanvasEffectHandler(Protocol):
 
 def info_splicing(
     info: ImageList,
-    BG_path: Path | None = None,
+    BG_path: str | Path | None = None,
     width: int = 880,
     padding: int = 20,
     spacing: int = 20,
@@ -157,7 +157,7 @@ def info_splicing(
         height = height - spacing + padding
 
     size = (width + padding * 2, height)
-    if BG_path and BG_path.exists():
+    if BG_path is not None and ((BG_path := Path(BG_path)) if isinstance(BG_path, str) else BG_path).exists():
         bg = Image.open(BG_path).convert("RGB")
         canvas = CropResize(bg, size)
     else:
@@ -173,9 +173,13 @@ def info_splicing(
                 canvas.paste(image, (padding, y), mask=image)
 
         elif BG_type.startswith("GAUSS"):
-            try:
-                radius = int(BG_type.split(":")[1])
-            except (IndexError, ValueError):
+            arg = BG_type.split(":")
+            if len(arg) > 1:
+                try:
+                    radius = int(arg[1])
+                except ValueError:
+                    radius = 4
+            else:
                 radius = 4
 
             def BG(canvas: IMG, image: IMG, padding: int, x: int, y: int):
@@ -206,6 +210,24 @@ def info_splicing(
 
 
 class Linecard:
+    """
+    文本标记
+        ----:横线
+        [left]靠左
+        [right]靠右
+        [center]居中
+        [pixel 400]指定像素
+        [font size = 50,name = simsun,color = red,highlight = yellow]指定文本格式
+        [style **kwargs] 控制参数
+            height: 行高
+            width: 行宽
+            color: 本行颜色
+        [nowrap]不换行
+        [passport]保持标记
+        [autowrap]自动换行
+        [noautowrap]不自动换行
+    """
+
     def __init__(self, font_name: str, fallback: list[str], sizes: Iterable[int] | None = None) -> None:
         path = find_font(font_name)
         if not path:
@@ -278,23 +300,6 @@ class Linecard:
         autowrap: bool = False,
         canvas: IMG | None = None,
     ) -> IMG:
-        """
-        文本标记
-            ----:横线
-            [left]靠左
-            [right]靠右
-            [center]居中
-            [pixel 400]指定像素
-            [font size = 50,name = simsun,color = red,highlight = yellow]指定文本格式
-            [style **kwargs] 控制参数
-                height: 行高
-                width: 行宽
-                color: 本行颜色
-            [nowrap]不换行
-            [passport]保持标记
-            [autowrap]自动换行
-            [noautowrap]不自动换行
-        """
         font_cmap = self.get_font(self.font_path, font_size)
         assert font_cmap is not None, "字体文件不存在"
         text, tags = parse_str(text)
@@ -350,15 +355,15 @@ class Linecard:
             else:
                 line_init()
             tmp_height: int = 0
-            for unit_line in line.replace("{", "\n{").split("\n"):
+            for unit_rawline in line.split("{"):
                 # 渲染行单位存在格式标签
-                if unit_line.startswith("{}"):
-                    unit_line = unit_line[2:]
+                if unit_rawline.startswith("}"):
+                    unit_line = unit_rawline = unit_rawline[1:]
                     tag, param = tags.popleft()
                     match tag:
                         # 原样输出字符串
                         case b"r":
-                            unit_line = param + unit_line
+                            unit_line = param + unit_rawline
                         # 对齐标签
                         case b"a":
                             unit_align = param
@@ -384,7 +389,7 @@ class Linecard:
                                 if line_font_cmap:
                                     line_font, line_cmap = line_font_cmap
                             line_color = fontkwargs.get("color", line_color)
-                            line_highlight = fontkwargs.get("highlight", line_highlight)
+                            line_highlight = fontkwargs.get("highlight")
                         # 样式标签
                         case b"s":
                             stylekwargs = {k: v for k, v in [x.split("=", 1) for x in param.replace(" ", "").split(",")]}
@@ -403,10 +408,12 @@ class Linecard:
                                     line_autowrap = False
                                 case "passport":
                                     line_passport = True
+                else:
+                    unit_line = unit_rawline
                 # 渲染行单位格式标签外的文本
                 if not unit_line:
                     continue
-                elif unit_line == "----":
+                elif unit_rawline == "----":
                     line_height = line_height or font_size
                     charlist.append({"char": "----", "color": line_color, "y": y, "size": line_height})
                     x = 0

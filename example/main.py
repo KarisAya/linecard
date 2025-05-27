@@ -1,45 +1,18 @@
-if __name__ == "__main__":
-    import sys
-    from pathlib import Path
+import sys
+from pathlib import Path
 
-    sys.path.append(Path(__file__).parent.parent.as_posix())
-    import time
-    from linecard import Linecard
+sys.path.append(Path(__file__).parent.parent.as_posix())
+from linecard import Linecard, info_splicing
 
-    linecard = Linecard(
-        "汉仪家书简",
-        [
-            "msyh",
-            "Arial",
-            "Tahoma",
-            "Microsoft YaHei",
-            "Segoe UI",
-            "Segoe UI Emoji",
-            "Segoe UI Symbol",
-            "Helvetica Neue",
-            "PingFang SC",
-            "Hiragino Sans GB",
-            "Source Han Sans SC",
-            "Noto Sans SC",
-            "Noto Sans CJK JP",
-            "WenQuanYi Micro Hei",
-            "Apple Color Emoji",
-            "Noto Color Emoji",
-        ],
-        [40],
-    )
+linecard = Linecard("simfang", ["simsun", "Arial", "Tahoma"])
+path = Path(__file__).parent
 
-    start = time.time()
+image = linecard(
+    path.joinpath("example.txt").read_text(encoding="utf-8"),
+    40,
+    width=1600,
+    autowrap=True,
+    padding=(20, 40),
+)
 
-    # for i in range(1, 100):
-
-    linecard(
-        Path(__file__).parent.joinpath("example.txt").read_text(encoding="utf-8"),
-        40,
-        width=1600,
-        bg_color="#FFFFFF",
-        autowrap=True,
-        padding=(20, 40),
-    ).show()
-
-    print(time.time() - start)
+info_splicing([image], width=1600, BG_path=path.joinpath("bg.png"), BG_type="#FFFFFF99").save("example.png", format="png")
