@@ -43,6 +43,8 @@ def find_font(font_name: str, search_paths: Iterable[Path] = [Path(FONT_PATH) fo
     except:
         pass
     for search_path in search_paths:
+        if not search_path.exists():
+            continue
         for file in search_path.iterdir():
             if check_font(file, font_name):
                 return file.absolute().as_posix()
